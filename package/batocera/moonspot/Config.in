@@ -1,0 +1,13 @@
+menuconfig BR2_PACKAGE_BATOCERA_MOONSPOT
+	bool "Moon Spot Packages"
+	help
+	  Moon Spot branded arcade kiosk packages
+
+if BR2_PACKAGE_BATOCERA_MOONSPOT
+
+source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/moonspot/moonspot-splash/Config.in"
+source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/moonspot/moonspot-kiosk/Config.in"
+source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/moonspot/moonspot-backend/Config.in"
+source "$BR2_EXTERNAL_BATOCERA_PATH/package/batocera/moonspot/moonspot-signage/Config.in"
+
+endif # BR2_PACKAGE_BATOCERA_MOONSPOT

@@ -1,0 +1,32 @@
+#!/bin/bash
+# Moon Spot Digital Signage Service
+
+SIGNAGE_ENABLED="${MOONSPOT_SIGNAGE_ENABLED:-1}"
+
+case "$1" in
+    start)
+        if [ "$SIGNAGE_ENABLED" = "1" ]; then
+            echo "Starting Moon Spot Digital Signage service..."
+            # Start in background
+            moonspot-signage start &
+        fi
+        ;;
+
+    stop)
+        echo "Stopping Moon Spot Digital Signage service..."
+        moonspot-signage stop
+        ;;
+
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0

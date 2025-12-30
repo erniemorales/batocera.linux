@@ -1,0 +1,4 @@
+config BR2_PACKAGE_MOONSPOT_KIOSK
+	bool "moonspot-kiosk"
+	help
+	  Moon Spot kiosk mode with settings lockdown and ROM rotation management

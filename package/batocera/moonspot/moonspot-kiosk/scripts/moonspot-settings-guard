@@ -1,0 +1,64 @@
+#!/bin/bash
+# Moon Spot Settings Guard
+# Monitors and prevents unauthorized changes to system settings
+
+BATOCERA_CONF="/userdata/system/batocera.conf"
+BACKUP_CONF="/usr/share/moonspot/batocera.conf.master"
+
+# Create backup of master configuration if it doesn't exist
+if [ ! -f "$BACKUP_CONF" ]; then
+    mkdir -p "$(dirname "$BACKUP_CONF")"
+    cp "$BATOCERA_CONF" "$BACKUP_CONF"
+fi
+
+# Function to restore settings from master
+restore_settings() {
+    echo "Moon Spot: Restoring kiosk settings..."
+    chattr -i "$BATOCERA_CONF" 2>/dev/null
+
+    # Restore critical kiosk settings from backup
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        [[ "$key" =~ ^#.*$ ]] && continue
+        [[ -z "$key" ]] && continue
+
+        # Update or add the setting
+        if grep -q "^${key}=" "$BATOCERA_CONF"; then
+            sed -i "s|^${key}=.*|${key}=${value}|" "$BATOCERA_CONF"
+        else
+            echo "${key}=${value}" >> "$BATOCERA_CONF"
+        fi
+    done < "$BACKUP_CONF"
+
+    chattr +i "$BATOCERA_CONF" 2>/dev/null
+}
+
+# Main guard function
+case "${1:-guard}" in
+    guard)
+        # Check if settings have been modified
+        if ! chattr -i "$BATOCERA_CONF" 2>/dev/null; then
+            # Settings were changed, restore them
+            restore_settings
+        fi
+        ;;
+
+    restore)
+        restore_settings
+        ;;
+
+    update-master)
+        # Update the master configuration (for authorized updates)
+        chattr -i "$BATOCERA_CONF" 2>/dev/null
+        cp "$BATOCERA_CONF" "$BACKUP_CONF"
+        chattr +i "$BATOCERA_CONF" 2>/dev/null
+        echo "Master configuration updated"
+        ;;
+
+    *)
+        echo "Usage: $0 {guard|restore|update-master}"
+        exit 1
+        ;;
+esac
+
+exit 0

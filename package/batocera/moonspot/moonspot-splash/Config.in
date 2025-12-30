@@ -1,0 +1,4 @@
+config BR2_PACKAGE_MOONSPOT_SPLASH
+	bool "moonspot-splash"
+	help
+	  Moon Spot branded splash screens and video content

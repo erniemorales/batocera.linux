@@ -1,0 +1,178 @@
+#!/bin/bash
+# Moon Spot Digital Signage
+# Displays promotional content on a second screen
+
+SIGNAGE_DIR="/usr/share/moonspot/signage"
+MOONSPOT_CONF="/userdata/system/moonspot/signage.conf"
+DISPLAY="${MOONSPOT_SIGNAGE_DISPLAY:-HDMI-2}"
+
+# Default configuration
+ROTATION_INTERVAL=30  # seconds per item
+LOOP=true
+SHUFFLE=true
+
+# Load configuration
+if [ -f "$MOONSPOT_CONF" ]; then
+    source "$MOONSPOT_CONF"
+fi
+
+# Function to detect available displays
+detect_displays() {
+    echo "Detecting displays..."
+
+    # Try to get display info using different methods
+    if command -v xrandr >/dev/null 2>&1; then
+        xrandr --listmonitors
+    elif command -v wlr-randr >/dev/null 2>&1; then
+        wlr-randr
+    else
+        echo "No display detection tool available"
+    fi
+}
+
+# Function to get video files
+get_media_files() {
+    find "$SIGNAGE_DIR" -type f \( -name "*.mp4" -o -name "*.webm" -o -name "*.jpg" -o -name "*.png" \) 2>/dev/null
+}
+
+# Function to start signage display
+start_signage() {
+    local media_files=$(get_media_files)
+
+    if [ -z "$media_files" ]; then
+        echo "No media files found in $SIGNAGE_DIR"
+        return 1
+    fi
+
+    echo "Starting Moon Spot Digital Signage on $DISPLAY..."
+
+    # Create playlist
+    local playlist="/tmp/moonspot-signage-playlist.txt"
+    echo "$media_files" > "$playlist"
+
+    # Start MPV in fullscreen on the second display
+    # Using DRM backend for direct hardware output
+    export SDL_VIDEO_FULLSCREEN_DISPLAY=1
+
+    while true; do
+        while IFS= read -r media_file; do
+            # Determine if file is video or image
+            if [[ "$media_file" =~ \.(mp4|webm)$ ]]; then
+                # Play video
+                mpv --fs \
+                    --loop-file=no \
+                    --no-audio \
+                    --quiet \
+                    --vo=gpu \
+                    --hwdec=auto \
+                    --screen=1 \
+                    "$media_file"
+            else
+                # Display image
+                mpv --fs \
+                    --image-display-duration=$ROTATION_INTERVAL \
+                    --no-audio \
+                    --quiet \
+                    --vo=gpu \
+                    --screen=1 \
+                    "$media_file"
+            fi
+        done < "$playlist"
+
+        # Break loop if not set to loop
+        [ "$LOOP" != "true" ] && break
+    done
+}
+
+# Function to stop signage
+stop_signage() {
+    echo "Stopping Moon Spot Digital Signage..."
+    killall mpv 2>/dev/null
+    pkill -f moonspot-signage 2>/dev/null
+}
+
+# Function to add media
+add_media() {
+    local source="$1"
+    local filename=$(basename "$source")
+
+    if [ ! -f "$source" ]; then
+        echo "File not found: $source"
+        return 1
+    fi
+
+    mkdir -p "$SIGNAGE_DIR"
+    cp "$source" "$SIGNAGE_DIR/$filename"
+    echo "Added: $filename"
+}
+
+# Function to list media
+list_media() {
+    echo "Media files in signage directory:"
+    ls -lh "$SIGNAGE_DIR" 2>/dev/null || echo "No media files"
+}
+
+# Function to remove media
+remove_media() {
+    local filename="$1"
+
+    if [ -f "$SIGNAGE_DIR/$filename" ]; then
+        rm "$SIGNAGE_DIR/$filename"
+        echo "Removed: $filename"
+    else
+        echo "File not found: $filename"
+    fi
+}
+
+# Main command handler
+case "${1:-help}" in
+    start)
+        start_signage
+        ;;
+
+    stop)
+        stop_signage
+        ;;
+
+    restart)
+        stop_signage
+        sleep 1
+        start_signage
+        ;;
+
+    detect)
+        detect_displays
+        ;;
+
+    add)
+        add_media "$2"
+        ;;
+
+    remove)
+        remove_media "$2"
+        ;;
+
+    list)
+        list_media
+        ;;
+
+    *)
+        echo "Moon Spot Digital Signage"
+        echo "Usage: $0 {start|stop|restart|detect|add|remove|list}"
+        echo ""
+        echo "Commands:"
+        echo "  start       - Start digital signage on second screen"
+        echo "  stop        - Stop digital signage"
+        echo "  restart     - Restart digital signage"
+        echo "  detect      - Detect available displays"
+        echo "  add <file>  - Add media file to signage rotation"
+        echo "  remove <f>  - Remove media file from signage"
+        echo "  list        - List all media files"
+        echo ""
+        echo "Configuration: $MOONSPOT_CONF"
+        echo "Media directory: $SIGNAGE_DIR"
+        exit 1
+        ;;
+esac
+
+exit $?

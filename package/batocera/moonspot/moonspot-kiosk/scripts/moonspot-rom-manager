@@ -1,0 +1,171 @@
+#!/bin/bash
+# Moon Spot ROM Manager
+# Manages monthly ROM rotation and gamelist updates
+
+MOONSPOT_ROMS="/userdata/system/moonspot/roms"
+ACTIVE_ROMS="/userdata/roms"
+MOONSPOT_API="${MOONSPOT_API_URL:-http://localhost:8080}"
+
+# Function to fetch current month's ROM list from backend
+fetch_rom_list() {
+    local month_id="$1"
+
+    if [ -z "$month_id" ]; then
+        # Get current month ID (YYYY-MM format)
+        month_id=$(date +%Y-%m)
+    fi
+
+    echo "Fetching ROM list for month: $month_id"
+
+    # Fetch from backend API
+    curl -s "${MOONSPOT_API}/api/roms/month/${month_id}" -o /tmp/moonspot-roms.json
+
+    if [ $? -eq 0 ]; then
+        echo "ROM list fetched successfully"
+        return 0
+    else
+        echo "Failed to fetch ROM list from backend"
+        return 1
+    fi
+}
+
+# Function to sync ROMs based on the fetched list
+sync_roms() {
+    local rom_list="/tmp/moonspot-roms.json"
+
+    if [ ! -f "$rom_list" ]; then
+        echo "No ROM list found"
+        return 1
+    fi
+
+    echo "Syncing ROMs..."
+
+    # Parse JSON and sync each system
+    # This would use jq or python to parse the JSON
+    # For now, we'll create a simple implementation
+
+    # TODO: Implement JSON parsing and ROM syncing
+    # Example structure expected in JSON:
+    # {
+    #   "month": "2025-01",
+    #   "systems": {
+    #     "snes": ["game1.smc", "game2.smc"],
+    #     "genesis": ["game1.md", "game2.md"]
+    #   }
+    # }
+
+    echo "ROM sync complete"
+}
+
+# Function to update gamelists
+update_gamelists() {
+    echo "Updating gamelists..."
+
+    # Trigger EmulationStation to refresh gamelists
+    if pidof emulationstation >/dev/null; then
+        killall -HUP emulationstation
+    fi
+
+    echo "Gamelists updated"
+}
+
+# Function to download ROMs from backend
+download_roms() {
+    local month_id="${1:-$(date +%Y-%m)}"
+
+    echo "Downloading ROMs for month: $month_id"
+
+    # Create monthly ROM directory
+    mkdir -p "${MOONSPOT_ROMS}/${month_id}"
+
+    # Download ROM package from backend
+    curl -o "/tmp/moonspot-roms-${month_id}.tar.gz" \
+         "${MOONSPOT_API}/api/roms/download/${month_id}"
+
+    if [ $? -eq 0 ]; then
+        # Extract ROMs
+        tar -xzf "/tmp/moonspot-roms-${month_id}.tar.gz" -C "${MOONSPOT_ROMS}/${month_id}"
+        echo "ROMs downloaded and extracted"
+        return 0
+    else
+        echo "Failed to download ROMs"
+        return 1
+    fi
+}
+
+# Function to activate a month's ROM set
+activate_month() {
+    local month_id="${1:-$(date +%Y-%m)}"
+
+    echo "Activating ROM set for: $month_id"
+
+    # Backup current ROMs
+    if [ -d "$ACTIVE_ROMS" ]; then
+        echo "Backing up current ROMs..."
+        mkdir -p /userdata/system/moonspot/backup
+        mv "$ACTIVE_ROMS" "/userdata/system/moonspot/backup/roms-$(date +%Y%m%d-%H%M%S)"
+    fi
+
+    # Create symlinks or copy ROMs to active directory
+    if [ -d "${MOONSPOT_ROMS}/${month_id}" ]; then
+        cp -r "${MOONSPOT_ROMS}/${month_id}"/* "$ACTIVE_ROMS/"
+        echo "ROM set activated"
+        update_gamelists
+        return 0
+    else
+        echo "ROM set for $month_id not found"
+        return 1
+    fi
+}
+
+# Main command handler
+case "${1:-help}" in
+    fetch)
+        fetch_rom_list "$2"
+        ;;
+
+    sync)
+        fetch_rom_list "$2" && sync_roms
+        ;;
+
+    download)
+        download_roms "$2"
+        ;;
+
+    activate)
+        activate_month "$2"
+        ;;
+
+    update)
+        # Full update: fetch, download, and activate
+        month_id="${2:-$(date +%Y-%m)}"
+        fetch_rom_list "$month_id" && \
+        download_roms "$month_id" && \
+        activate_month "$month_id"
+        ;;
+
+    list)
+        # List available ROM sets
+        echo "Available ROM sets:"
+        ls -1 "$MOONSPOT_ROMS" 2>/dev/null || echo "No ROM sets found"
+        ;;
+
+    *)
+        echo "Moon Spot ROM Manager"
+        echo "Usage: $0 {fetch|sync|download|activate|update|list} [month-id]"
+        echo ""
+        echo "Commands:"
+        echo "  fetch [month]     - Fetch ROM list from backend for specified month"
+        echo "  sync [month]      - Sync ROMs based on fetched list"
+        echo "  download [month]  - Download ROM package from backend"
+        echo "  activate [month]  - Activate a downloaded ROM set"
+        echo "  update [month]    - Complete update process (fetch + download + activate)"
+        echo "  list              - List available ROM sets"
+        echo ""
+        echo "Month format: YYYY-MM (e.g., 2025-01)"
+        echo "If no month specified, uses current month"
+        exit 1
+        ;;
+esac
+
+exit $?

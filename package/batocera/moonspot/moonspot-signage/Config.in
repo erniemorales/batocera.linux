@@ -1,0 +1,5 @@
+config BR2_PACKAGE_MOONSPOT_SIGNAGE
+	bool "moonspot-signage"
+	select BR2_PACKAGE_MPV
+	help
+	  Moon Spot digital signage for second screen display

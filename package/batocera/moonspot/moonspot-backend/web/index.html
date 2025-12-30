@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moon Spot Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button.danger {
+            background: #e53e3e;
+        }
+
+        button.danger:hover {
+            background: #c53030;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .status.success {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status.error {
+            background: #fed7d7;
+            color: #742a2a;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            background: #f7fafc;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Moon Spot Admin Panel</h1>
+            <p>Manage your Moon Spot arcade kiosk system</p>
+        </div>
+
+        <div id="status" class="hidden"></div>
+
+        <div class="grid">
+            <!-- ROM Management -->
+            <div class="card">
+                <h2>ROM Management</h2>
+                <div class="form-group">
+                    <label for="current-month">Current Month:</label>
+                    <input type="month" id="current-month" />
+                </div>
+                <div class="form-group file-upload" onclick="document.getElementById('rom-upload').click()">
+                    <input type="file" id="rom-upload" class="hidden" accept=".tar.gz,.zip" />
+                    <p>📦 Click to upload ROM package</p>
+                    <small>Supported: .tar.gz, .zip</small>
+                </div>
+                <button onclick="activateROMs()">Activate Selected Month</button>
+            </div>
+
+            <!-- Kiosk Settings -->
+            <div class="card">
+                <h2>Kiosk Mode</h2>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="kiosk-enabled" />
+                        Enable Kiosk Mode
+                    </label>
+                    <small>Prevents users from changing settings</small>
+                </div>
+                <div class="form-group">
+                    <label for="screensaver-timeout">Screensaver Timeout (minutes):</label>
+                    <input type="number" id="screensaver-timeout" value="3" min="1" max="30" />
+                </div>
+                <button onclick="updateKioskSettings()">Save Kiosk Settings</button>
+            </div>
+
+            <!-- RetroAchievements -->
+            <div class="card">
+                <h2>High Score Tracking</h2>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="ra-enabled" />
+                        Enable RetroAchievements
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="ra-username">Username:</label>
+                    <input type="text" id="ra-username" placeholder="RetroAchievements username" />
+                </div>
+                <div class="form-group">
+                    <label for="ra-password">Password:</label>
+                    <input type="password" id="ra-password" placeholder="Password" />
+                </div>
+                <button onclick="updateAchievements()">Save Achievement Settings</button>
+            </div>
+
+            <!-- System Control -->
+            <div class="card">
+                <h2>System Control</h2>
+                <div class="form-group">
+                    <button onclick="rebootSystem()">🔄 Reboot System</button>
+                </div>
+                <div class="form-group">
+                    <button class="danger" onclick="shutdownSystem()">⚡ Shutdown System</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.className = `status ${type}`;
+            status.textContent = message;
+            status.classList.remove('hidden');
+            setTimeout(() => status.classList.add('hidden'), 5000);
+        }
+
+        async function loadConfig() {
+            try {
+                const response = await fetch(`${API_URL}/config`);
+                const config = await response.json();
+
+                // Set current month
+                const currentMonth = config.current_month || new Date().toISOString().slice(0, 7);
+                document.getElementById('current-month').value = currentMonth;
+
+                // Set kiosk status
+                const kioskResponse = await fetch(`${API_URL}/settings/kiosk`);
+                const kioskData = await kioskResponse.json();
+                document.getElementById('kiosk-enabled').checked = kioskData.kiosk_enabled;
+
+                // Set RetroAchievements config
+                const raConfig = config.retroachievements || {};
+                document.getElementById('ra-enabled').checked = raConfig.enabled || false;
+                document.getElementById('ra-username').value = raConfig.username || '';
+
+            } catch (error) {
+                showStatus('Error loading configuration: ' + error.message, 'error');
+            }
+        }
+
+        async function activateROMs() {
+            const monthId = document.getElementById('current-month').value;
+            if (!monthId) {
+                showStatus('Please select a month', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/roms/activate/${monthId}`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showStatus(`ROM set for ${monthId} activated successfully!`);
+                } else {
+                    showStatus(data.message || 'Error activating ROMs', 'error');
+                }
+            } catch (error) {
+                showStatus('Error activating ROMs: ' + error.message, 'error');
+            }
+        }
+
+        async function updateKioskSettings() {
+            const enabled = document.getElementById('kiosk-enabled').checked;
+
+            try {
+                const response = await fetch(`${API_URL}/settings/kiosk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled })
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showStatus('Kiosk settings updated!');
+                } else {
+                    showStatus(data.message || 'Error updating kiosk settings', 'error');
+                }
+            } catch (error) {
+                showStatus('Error updating kiosk settings: ' + error.message, 'error');
+            }
+        }
+
+        async function updateAchievements() {
+            const enabled = document.getElementById('ra-enabled').checked;
+            const username = document.getElementById('ra-username').value;
+            const password = document.getElementById('ra-password').value;
+
+            if (enabled && (!username || !password)) {
+                showStatus('Please enter username and password', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/achievements/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled, username, password })
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showStatus('Achievement settings updated!');
+                } else {
+                    showStatus(data.message || 'Error updating achievements', 'error');
+                }
+            } catch (error) {
+                showStatus('Error updating achievements: ' + error.message, 'error');
+            }
+        }
+
+        async function rebootSystem() {
+            if (!confirm('Are you sure you want to reboot the system?')) return;
+
+            try {
+                await fetch(`${API_URL}/system/reboot`, { method: 'POST' });
+                showStatus('System is rebooting...');
+            } catch (error) {
+                showStatus('Error rebooting system: ' + error.message, 'error');
+            }
+        }
+
+        async function shutdownSystem() {
+            if (!confirm('Are you sure you want to shutdown the system?')) return;
+
+            try {
+                await fetch(`${API_URL}/system/shutdown`, { method: 'POST' });
+                showStatus('System is shutting down...');
+            } catch (error) {
+                showStatus('Error shutting down system: ' + error.message, 'error');
+            }
+        }
+
+        // Handle ROM upload
+        document.getElementById('rom-upload').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const monthId = document.getElementById('current-month').value;
+            const formData = new FormData();
+            formData.append('rom_package', file);
+            formData.append('month_id', monthId);
+
+            try {
+                const response = await fetch(`${API_URL}/roms/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showStatus('ROM package uploaded successfully!');
+                } else {
+                    showStatus(data.message || 'Error uploading ROM package', 'error');
+                }
+            } catch (error) {
+                showStatus('Error uploading ROM package: ' + error.message, 'error');
+            }
+        });
+
+        // Load configuration on page load
+        window.addEventListener('load', loadConfig);
+    </script>
+</body>
+</html>

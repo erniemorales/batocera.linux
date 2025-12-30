@@ -1,0 +1,7 @@
+config BR2_PACKAGE_MOONSPOT_BACKEND
+	bool "moonspot-backend"
+	select BR2_PACKAGE_PYTHON3
+	select BR2_PACKAGE_PYTHON_FLASK
+	select BR2_PACKAGE_PYTHON_FLASK_CORS
+	help
+	  Moon Spot backend API for content and ROM management

@@ -1,0 +1,33 @@
+#!/bin/bash
+# Moon Spot Branding Initialization
+# Ensures Moon Spot branding is displayed at boot
+
+case "$1" in
+    start)
+        echo "Initializing Moon Spot branding..."
+
+        # Set system hostname
+        if [ -f /etc/hostname ]; then
+            echo "MOONSPOT" > /etc/hostname
+            hostname MOONSPOT
+        fi
+
+        # Create Moon Spot directories
+        mkdir -p /userdata/system/moonspot
+        mkdir -p /userdata/system/moonspot/roms
+        mkdir -p /userdata/system/moonspot/backup
+
+        echo "Moon Spot branding initialized"
+        ;;
+
+    stop)
+        # Nothing to do
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop}"
+        exit 1
+        ;;
+esac
+
+exit 0

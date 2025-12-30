@@ -1,0 +1,79 @@
+#!/bin/bash
+# Moon Spot Kiosk Mode Initialization
+# This script runs at boot to enforce kiosk mode settings
+
+MOONSPOT_CONF="/userdata/system/moonspot.conf"
+BATOCERA_CONF="/userdata/system/batocera.conf"
+
+# Function to set or update a configuration value
+set_config() {
+    local key="$1"
+    local value="$2"
+    local file="${3:-$BATOCERA_CONF}"
+
+    if grep -q "^${key}=" "$file" 2>/dev/null; then
+        sed -i "s|^${key}=.*|${key}=${value}|" "$file"
+    else
+        echo "${key}=${value}" >> "$file"
+    fi
+}
+
+case "$1" in
+    start)
+        echo "Starting Moon Spot Kiosk Mode..."
+
+        # Ensure kiosk configuration directory exists
+        mkdir -p /userdata/system/moonspot
+
+        # Apply kiosk mode settings to batocera.conf
+        # Disable menu options that users shouldn't access
+        set_config "system.es.menu" "bartop"
+
+        # Disable services that might allow configuration changes
+        set_config "system.ssh.enabled" "0"
+        set_config "system.samba.enabled" "0"
+
+        # Lock display settings
+        set_config "system.es.selectedsystem" "auto"
+
+        # Enable screensaver for promotional content
+        set_config "system.es.screensaver.enable" "1"
+        set_config "system.es.screensaver.type" "video"
+        set_config "system.es.screensaver.path" "/usr/share/moonspot/screensaver"
+        set_config "system.es.screensaver.time" "180000"  # 3 minutes
+
+        # Enable RetroAchievements for high scores (if configured)
+        if [ -f "$MOONSPOT_CONF" ]; then
+            source "$MOONSPOT_CONF"
+            if [ -n "$RETROACHIEVEMENTS_USER" ]; then
+                set_config "global.retroachievements" "1"
+                set_config "global.retroachievements.username" "$RETROACHIEVEMENTS_USER"
+                set_config "global.retroachievements.password" "$RETROACHIEVEMENTS_PASSWORD"
+                set_config "global.retroachievements.leaderboards" "1"
+            fi
+        fi
+
+        # Make batocera.conf read-only to prevent user changes
+        chattr +i "$BATOCERA_CONF" 2>/dev/null || true
+
+        echo "Moon Spot Kiosk Mode enabled"
+        ;;
+
+    stop)
+        echo "Stopping Moon Spot Kiosk Mode..."
+        # Remove read-only flag for updates
+        chattr -i "$BATOCERA_CONF" 2>/dev/null || true
+        ;;
+
+    restart)
+        $0 stop
+        $0 start
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0

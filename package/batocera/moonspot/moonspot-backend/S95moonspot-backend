@@ -1,0 +1,50 @@
+#!/bin/bash
+# Moon Spot Backend Service
+
+BACKEND_SCRIPT="/usr/share/moonspot/backend/moonspot-api.py"
+PIDFILE="/var/run/moonspot-backend.pid"
+
+case "$1" in
+    start)
+        echo "Starting Moon Spot Backend..."
+        if [ -f "$BACKEND_SCRIPT" ]; then
+            python3 "$BACKEND_SCRIPT" &
+            echo $! > "$PIDFILE"
+            echo "Moon Spot Backend started"
+        else
+            echo "Backend script not found: $BACKEND_SCRIPT"
+            exit 1
+        fi
+        ;;
+
+    stop)
+        echo "Stopping Moon Spot Backend..."
+        if [ -f "$PIDFILE" ]; then
+            kill $(cat "$PIDFILE") 2>/dev/null
+            rm -f "$PIDFILE"
+            echo "Moon Spot Backend stopped"
+        fi
+        ;;
+
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+
+    status)
+        if [ -f "$PIDFILE" ] && kill -0 $(cat "$PIDFILE") 2>/dev/null; then
+            echo "Moon Spot Backend is running (PID: $(cat $PIDFILE))"
+        else
+            echo "Moon Spot Backend is not running"
+            exit 1
+        fi
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,44 @@
+# Moon Spot Default Batocera Configuration
+# This configuration is optimized for kiosk/arcade use
+
+# ------------ System Options ----------- #
+system.hostname=MOONSPOT
+system.es.menu=bartop
+
+# Disable SSH and Samba for security
+system.ssh.enabled=0
+system.samba.enabled=0
+
+# ------------ Splash Screen ------------ #
+splash.screen.enabled=1
+splash.screen.sound=1
+
+# ------------ Kodi ------------ #
+kodi.enabled=0
+kodi.atstartup=0
+
+# ------------ Audio ------------ #
+audio.volume=80
+audio.bgmusic=1
+
+# ------------ EmulationStation Settings ------------ #
+# Screensaver for promotional content
+system.es.screensaver.enable=1
+system.es.screensaver.type=video
+system.es.screensaver.path=/usr/share/moonspot/screensaver
+system.es.screensaver.time=180000
+
+# ------------ Global Emulator Configuration ------------ #
+global.smooth=1
+global.shaderset=none
+global.ratio=auto
+
+# RetroAchievements (configure in moonspot.conf)
+global.retroachievements=0
+global.retroachievements.hardcore=0
+global.retroachievements.leaderboards=1
+global.retroachievements.verbose=0
+
+# ------------ Updates ------------ #
+# Disable auto-updates in kiosk mode
+updates.enabled=0
