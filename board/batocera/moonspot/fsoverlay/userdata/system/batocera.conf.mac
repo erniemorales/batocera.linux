@@ -1,0 +1,105 @@
+# Moon Spot - Mac-Optimized Configuration
+# Recommended settings for Intel Macs with older NVIDIA GPUs (e.g., MacBook Pro A1226)
+
+# ------------ System Options ----------- #
+system.hostname=MOONSPOT
+
+# ES menu (bartop for kiosk mode)
+system.es.menu=bartop
+
+# Disable unnecessary services for performance
+system.ssh.enabled=0
+system.samba.enabled=0
+
+# ------------ Graphics / Display ------------ #
+
+# Force nouveau driver for older NVIDIA GPUs
+# This is usually automatic, but can be explicitly set
+# nvidia-driver=nouveau
+
+# Native resolution for MacBook Pro 15" (2007)
+# Adjust based on your Mac model:
+# - MacBook Pro 15" (2007): 1440x900 or 1680x1050
+# - MacBook Pro 13" (2007-2008): 1280x800
+#global.videomode=1440x900
+
+# Disable compositor for better performance on older hardware
+#global.videocompositor=0
+
+# ------------ Performance Optimizations ------------ #
+
+# Disable shaders for better performance
+global.shaderset=none
+
+# Disable smooth graphics (pixel-perfect)
+global.smooth=0
+
+# No integer scaling (can cause performance issues)
+global.integerscale=0
+
+# Simple ratio
+global.ratio=auto
+
+# ------------ Splash Screen ------------ #
+splash.screen.enabled=1
+splash.screen.sound=1
+
+# ------------ Kodi ------------ #
+# Disable Kodi to save resources
+kodi.enabled=0
+kodi.atstartup=0
+
+# ------------ Audio ------------ #
+audio.volume=80
+audio.bgmusic=1
+
+# ------------ EmulationStation Settings ------------ #
+
+# Screensaver for promotional content
+system.es.screensaver.enable=1
+system.es.screensaver.type=video
+system.es.screensaver.path=/usr/share/moonspot/screensaver
+system.es.screensaver.time=180000
+
+# ------------ Global Emulator Configuration ------------ #
+
+# RetroAchievements (configure in moonspot.conf)
+global.retroachievements=0
+global.retroachievements.hardcore=0
+global.retroachievements.leaderboards=1
+
+# Disable rewind (CPU intensive)
+global.rewind=0
+
+# Disable auto-save (can cause stuttering)
+global.autosave=0
+
+# ------------ Mac-Specific Optimizations ------------ #
+
+# Lower resolution for better performance on demanding emulators
+#psx.videomode=640x480
+#n64.videomode=640x480
+
+# Use lighter emulator cores
+#n64.emulator=mupen64plus-next
+#psx.emulator=pcsx_rearmed
+
+# Disable AI services (performance impact)
+#global.ai_service_enabled=0
+
+# ------------ Updates ------------ #
+# Disable auto-updates in kiosk mode
+updates.enabled=0
+
+# ------------ Notes ------------ #
+# For MacBook Pro A1226 (GeForce 8600M GT):
+# - Nouveau driver provides adequate 2D/3D performance
+# - Perfect for 8-bit/16-bit era emulation
+# - PS1, N64, and Dreamcast run well
+# - GameCube/PS2 may require lower settings
+#
+# To check driver status:
+#   cat /var/log/nvidia.log
+#
+# To list available video modes:
+#   batocera-resolution listModes
