@@ -2,6 +2,17 @@
 
 Moon Spot es una versión con marca personalizada de Batocera Linux diseñada para instalaciones de kiosco arcade con rotación mensual de ROM, seguimiento de puntuaciones altas y soporte de señalización digital.
 
+## ✅ Compatibilidad con Mac
+
+**¡Novedad!** Moon Spot ahora incluye soporte completo para Macs Intel, incluyendo modelos antiguos como el **MacBook Pro A1226 (2007)** con NVIDIA GeForce 8600M GT.
+
+- ✅ Soporte automático de driver Nouveau para GPUs NVIDIA antiguas
+- ✅ Optimizaciones específicas para Mac
+- ✅ Documentación completa en español
+- ✅ Configuración pre-optimizada para hardware Mac
+
+**Ver:** `MAC_COMPATIBILITY_ES.md` y `MAC_QUICKSTART_ES.md` para detalles completos.
+
 ## Características
 
 ### 🎮 Modo Kiosco
@@ -85,8 +96,19 @@ package/batocera/moonspot/
    ```
 
 4. **Grabar en tarjeta USB/SD:**
+
+   **En Linux/Windows:**
    ```bash
    dd if=output/images/batocera/batocera-moonspot-x86_64-XXXXX-XXXXXX.img of=/dev/sdX bs=4M
+   ```
+
+   **En macOS:**
+   ```bash
+   # Encontrar la unidad USB
+   diskutil list
+
+   # Grabar (reemplazar diskX con tu unidad)
+   sudo dd if=batocera-moonspot-x86_64-*.img of=/dev/rdiskX bs=4m
    ```
 
 ### Agregando Marca Personalizada
@@ -303,8 +325,32 @@ Moon Spot está construido sobre [Batocera Linux](https://batocera.org), una dis
 
 Las personalizaciones de Moon Spot se proporcionan tal cual. Batocera Linux y sus componentes conservan sus licencias originales.
 
+## Compatibilidad de Hardware
+
+### PC/Laptop x86_64
+- ✅ CPUs Intel (Core 2 Duo y superiores)
+- ✅ CPUs AMD (Athlon 64 y superiores)
+- ✅ Gráficos Intel HD/Iris
+- ✅ Gráficos AMD Radeon
+- ✅ Gráficos NVIDIA (GTX 400+ con driver propietario, anteriores con Nouveau)
+
+### Macs Intel
+- ✅ MacBook Pro (2007-2020)
+- ✅ iMac (2007-2020)
+- ✅ Mac Mini (2012-2020)
+- ✅ Mac Pro (2013-2019)
+- ⚠️ Modelos antiguos con NVIDIA usan driver Nouveau (rendimiento limitado en 3D)
+
+### No Soportado
+- ❌ Macs PowerPC
+- ❌ Macs con Apple Silicon (M1/M2/M3)
+- ❌ CPUs de 32-bit
+
+**Nota:** Para Macs con GPUs NVIDIA antiguas (como GeForce 8600M GT), ver `MAC_COMPATIBILITY_ES.md` para información detallada de compatibilidad y rendimiento.
+
 ## Soporte
 
 Para problemas y preguntas:
 - Consultar la Wiki de Batocera: https://wiki.batocera.org
 - Problemas específicos de Moon Spot: Crear un issue en este repositorio
+- **Compatibilidad con Mac:** Ver `MAC_COMPATIBILITY_ES.md` y `MAC_QUICKSTART_ES.md`

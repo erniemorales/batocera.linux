@@ -9,6 +9,19 @@ Moon Spot es una versión personalizada de Batocera Linux diseñada para instala
 - **Seguimiento de Puntuaciones Altas** - Integración con RetroAchievements para tablas de clasificación
 - **Señalización Digital** - Muestra contenido promocional en una segunda pantalla
 - **Panel de Administración Web** - Gestiona todo desde un navegador
+- **✅ Soporte para Mac** - Compatible con Macs Intel, incluyendo modelos antiguos
+
+## 💻 Compatibilidad con Mac
+
+Moon Spot funciona en Macs Intel, incluyendo modelos antiguos como el **MacBook Pro A1226 (2007)**.
+
+**Para usuarios de Mac:** Ver `MAC_QUICKSTART_ES.md` para instrucciones específicas de instalación y optimización.
+
+**Modelos compatibles:**
+- ✅ MacBook Pro (2007-2020)
+- ✅ iMac (2007-2020)
+- ✅ Mac Mini (2012-2020)
+- ⚠️ Modelos con NVIDIA antigua usan driver Nouveau (suficiente para juegos retro)
 
 ## 🎮 Construyendo tu Primera Imagen Moon Spot
 
@@ -63,6 +76,7 @@ make
 
 ### Paso 4: Grabar en USB/SD
 
+**En Linux:**
 ```bash
 # Encuentra tu dispositivo (ej., /dev/sdb)
 lsblk
@@ -75,6 +89,23 @@ sudo dd if=output/images/batocera/batocera-*.img \
 
 # Sincronizar y expulsar
 sync
+```
+
+**En macOS:**
+```bash
+# Encontrar unidad USB
+diskutil list
+
+# Desmontar
+diskutil unmountDisk /dev/diskX
+
+# Grabar imagen
+sudo dd if=batocera-moonspot-x86_64-*.img \
+        of=/dev/rdiskX \
+        bs=4m
+
+# Expulsar
+diskutil eject /dev/diskX
 ```
 
 ## 📦 Preparando Paquetes de ROM
@@ -375,7 +406,9 @@ chattr +i /userdata/system/batocera.conf
 - **Wiki de Batocera:** https://wiki.batocera.org
 - **RetroAchievements:** https://retroachievements.org
 - **EmulationStation:** https://emulationstation.org
-- **Documentación Completa de Moon Spot:** Ver `package/batocera/moonspot/README.md`
+- **Documentación Completa de Moon Spot:** Ver `package/batocera/moonspot/README_ES.md`
+- **Compatibilidad con Mac:** Ver `package/batocera/moonspot/MAC_COMPATIBILITY_ES.md`
+- **Guía Rápida para Mac:** Ver `package/batocera/moonspot/MAC_QUICKSTART_ES.md`
 
 ## 🎉 ¡Estás Listo!
 
