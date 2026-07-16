@@ -11,6 +11,10 @@
 ## :video_game::penguin: Batocera Linux :video_game::penguin:
 Batocera Linux is an open-source and completely free retro-gaming distribution that can be copied to a USB stick or an SD card with the aim of turning any computer/nano computer into a gaming console during a game or permanently. Batocera Linux does not require any modification on your computer. It supports [many emulators and game engines](https://www.batocera.org/compatibility.php) out of the box. 
 
+## Optional Branded Variants
+
+ - :moon: **Moon Spot** - An optional branded variant of Batocera for arcade kiosk deployments with AI-powered management, monthly ROM rotation, and digital signage. See [`package/batocera/moonspot/`](package/batocera/moonspot/README.md) for details. This is a separate BR2_EXTERNAL add-on that does not affect core Batocera.
+
 ## Get information on the project
 
  - :globe_with_meridians: Browse our [website](https://batocera.org/) for general information and get access to all the latest downloads

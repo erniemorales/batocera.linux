@@ -1,6 +1,16 @@
 # Moon Spot - Branded Batocera Arcade Kiosk
 
+> **Important:** Moon Spot is an **optional branded variant** of Batocera Linux. All Moon Spot packages are **BR2_EXTERNAL add-ons** that do not modify or affect the core Batocera project. This is a downstream derivative maintained separately.
+>
+> - ✅ Core Batocera remains unchanged
+> - ✅ Moon Spot packages are optional (must be explicitly enabled)
+> - ✅ Regular Batocera builds are unaffected
+> - ✅ All Moon Spot code lives in `package/batocera/moonspot/`
+> - ✅ Built as separate configuration: `batocera-moonspot-x86_64`
+
 Moon Spot is a branded version of Batocera Linux designed for arcade kiosk deployments with monthly ROM rotation, high score tracking, and digital signage support.
+
+📋 **Complete Documentation:** See [COMPLETE_PROJECT_PLAN.md](./COMPLETE_PROJECT_PLAN.md) for the full roadmap, Sprint 1 guide, and 2026 upgrade plan.
 
 ## Features
 
